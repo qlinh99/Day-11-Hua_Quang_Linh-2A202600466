@@ -1,3 +1,9 @@
 google-genai>=1.0.0
 google-adk>=0.3.0
-nemoguardrails>=0.10.0
+# nemoguardrails>=0.10.0  # Commented out due to Windows compilation issues
+
+# Bonus safety layers dependencies
+aiohttp>=3.9.0  # For Perspective API
+langdetect>=1.0.9  # For language detection
+sentence-transformers>=2.2.0  # For embeddings
+scikit-learn>=1.3.0  # For similarity calculations

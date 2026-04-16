@@ -38,9 +38,17 @@ def detect_injection(user_input: str) -> bool:
         True if injection detected, False otherwise
     """
     INJECTION_PATTERNS = [
-        # TODO: Add at least 5 regex patterns
-        # Example:
-        # r"ignore (all )?(previous|above) instructions",
+        r"ignore (all )?(previous|above) instructions",
+        r"you are now",
+        r"system prompt",
+        r"reveal your (instructions|prompt)",
+        r"pretend you are",
+        r"act as (a |an )?unrestricted",
+        r"bỏ qua (tất cả )?(các )?hướng dẫn",
+        r"bạn là",
+        r"hệ thống nhắc",
+        r"tiết lộ (các )?hướng dẫn",
+        r"giả vờ bạn là",
     ]
 
     for pattern in INJECTION_PATTERNS:
@@ -70,12 +78,18 @@ def topic_filter(user_input: str) -> bool:
     """
     input_lower = user_input.lower()
 
-    # TODO: Implement logic:
-    # 1. If input contains any blocked topic -> return True
-    # 2. If input doesn't contain any allowed topic -> return True
-    # 3. Otherwise -> return False (allow)
+    # Check for blocked topics first
+    for blocked in BLOCKED_TOPICS:
+        if blocked in input_lower:
+            return True
 
-    pass  # Replace with your implementation
+    # Check if input contains any allowed topic
+    for allowed in ALLOWED_TOPICS:
+        if allowed in input_lower:
+            return False
+
+    # If no allowed topics found, block it
+    return True
 
 
 # ============================================================
@@ -128,14 +142,18 @@ class InputGuardrailPlugin(base_plugin.BasePlugin):
         self.total_count += 1
         text = self._extract_text(user_message)
 
-        # TODO: Implement logic:
-        # 1. Call detect_injection(text)
-        #    - If True: increment blocked_count, return self._block_response("...")
-        # 2. Call topic_filter(text)
-        #    - If True: increment blocked_count, return self._block_response("...")
-        # 3. If both are False: return None (let message through)
+        # Check for injection
+        if detect_injection(text):
+            self.blocked_count += 1
+            return self._block_response("🚫 Prompt injection detected. Request blocked for security.")
 
-        pass  # Replace with your implementation
+        # Check topic filter
+        if topic_filter(text):
+            self.blocked_count += 1
+            return self._block_response("🚫 This query is off-topic. I can only help with banking and financial services.")
+
+        # Message is safe
+        return None
 
 
 # ============================================================
